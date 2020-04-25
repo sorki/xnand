@@ -1,6 +1,1 @@
-with import ./. {};
-
-hpkgs.shellFor {
-  packages = p: with hpkgs; [ nixbot ];
-  nativeBuildInputs = [ hpkgs.cabal-install ];
-}
+(import ./default.nix).env

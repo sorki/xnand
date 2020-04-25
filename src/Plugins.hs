@@ -7,16 +7,16 @@
 
 module Plugins where
 import           Control.Monad.Reader
-import Types
 import           System.Directory
 import qualified Data.Text as Text
 import           System.FilePath
-import qualified Data.Set as Set
-import Control.Concurrent.STM
+
+import           Frontend.Types
+import           Frontend.AMQP
+
 import           Config
 import           IRC
-import Frontend.Types
-import Frontend.AMQP
+import           Types
 
 class Monad m => PluginMonad m where
   getGlobalState :: m FilePath
@@ -109,13 +109,6 @@ chanMsg chan msg = lift $ sendFrontend Output
   { outputReceiver = Right chan
   , outputMessage = msg
   }
-
-
-isKnown :: User -> App Bool
-isKnown user = do
-  stateVar <- asks sharedState
-  state <- lift $ readTVarIO stateVar
-  return $ Set.member user (knownUsers state)
 
 reply :: Message -> PluginT App ()
 reply msg = do

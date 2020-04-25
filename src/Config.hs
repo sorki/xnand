@@ -1,37 +1,24 @@
-{-# LANGUAGE DeriveGeneric         #-}
-{-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE NamedFieldPuns        #-}
-{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE NamedFieldPuns    #-}
+{-# LANGUAGE OverloadedStrings #-}
 
-module Config ( getConfig
-              , amqpOptions
-              , Config(..)
-              , PluginConfig(..)
-              , PrConfig(..)
-              , enablePr
-              , RandomPrConfig(..)
-              , CommandsConfig(..)
-              , enableCommands
-              , NixreplConfig(..)
-              , enableNixrepl
-              , LeakedConfig(..)
-              , enableLeaked
-              , KarmaConfig(..)
-              , enableKarma
-              , UnregConfig(..)
-              , enableUnreg
-              , QuitConfig(..)
-              , enableQuit
-              , pluginConfigForSender
-              ) where
+module Config (
+    getConfig
+  , amqpOptions
+  , Config(..)
+  , PluginConfig(..)
+  , CommandsConfig(..)
+  , enableCommands
+  , pluginConfigForSender
+  ) where
 
 import           Data.Aeson
 import qualified Data.ByteString.Lazy.Char8 as BS
 import           Data.Char                  (toLower)
 import           Data.List                  (stripPrefix)
+import           Data.Maybe                 (fromMaybe)
 import           Data.Map                   (Map)
 import qualified Data.Map                   as Map
-import           Data.Maybe                 (fromMaybe)
 import           Data.Text                  (Text)
 import           GHC.Generics               (Generic)
 import           Network.AMQP
@@ -46,14 +33,13 @@ parser = argument str
 opts :: ParserInfo FilePath
 opts = info (parser <**> helper)
    ( fullDesc
-  <> progDesc "Nixbot"
-  <> header "nixbot - nix bot"
+  <> progDesc "Hnixbot"
+  <> header "hnixbot - hnix bot"
    )
 
 lowerFirst :: String -> String
 lowerFirst []       = []
 lowerFirst (c:rest) = toLower c : rest
-
 
 customOptions :: Options
 customOptions = defaultOptions
@@ -64,31 +50,8 @@ customOptions = defaultOptions
       field
   }
 
-data PrConfig = PrConfig
-  { configEnable                :: Bool
-  , configIgnoreStandaloneUnder :: Int
-  , configDefaultRepo           :: Text
-  , configDefaultOwners         :: Map Text Text
-  , configFallbackOwner         :: Text
-  } deriving (Show, Generic)
-
-instance FromJSON PrConfig where
-  parseJSON = genericParseJSON customOptions
-
-enablePr :: PluginConfig -> Bool
-enablePr PluginConfig { configPr = PrConfig { configEnable } } = configEnable
-
-
-newtype RandomPrConfig = RandomPrConfig
-  { configToken  :: Text
-  } deriving (Show, Generic)
-
-instance FromJSON RandomPrConfig where
-  parseJSON = genericParseJSON customOptions
-
 data CommandsConfig = CommandsConfig
   { configEnable   :: Bool
-  , configRandomPr :: RandomPrConfig
   } deriving (Show, Generic)
 
 instance FromJSON CommandsConfig where
@@ -97,66 +60,8 @@ instance FromJSON CommandsConfig where
 enableCommands :: PluginConfig -> Bool
 enableCommands PluginConfig { configCommands = CommandsConfig { configEnable } } = configEnable
 
-data NixreplConfig = NixreplConfig
-  { configEnable  :: Bool
-  , configNixPath :: [String]
-  } deriving (Show, Generic)
-
-instance FromJSON NixreplConfig where
-  parseJSON = genericParseJSON customOptions
-
-enableNixrepl :: PluginConfig -> Bool
-enableNixrepl PluginConfig { configNixrepl = NixreplConfig { configEnable } } = configEnable
-
-newtype LeakedConfig = LeakedConfig
-  { configEnable :: Bool
-  } deriving (Show, Generic)
-
-instance FromJSON LeakedConfig where
-  parseJSON = genericParseJSON customOptions
-
-enableLeaked :: PluginConfig -> Bool
-enableLeaked PluginConfig { configLeaked = LeakedConfig { configEnable } } = configEnable
-
-data KarmaConfig = KarmaConfig
-  { configEnable    :: Bool
-  , configBlacklist :: [Text]
-  } deriving (Show, Generic)
-
-instance FromJSON KarmaConfig where
-  parseJSON = genericParseJSON customOptions
-
-enableKarma :: PluginConfig -> Bool
-enableKarma PluginConfig { configKarma = KarmaConfig { configEnable } } = configEnable
-
-newtype UnregConfig = UnregConfig
-  { configEnable :: Bool
-  } deriving (Show, Generic)
-
-instance FromJSON UnregConfig where
-  parseJSON = genericParseJSON customOptions
-
-enableUnreg :: PluginConfig -> Bool
-enableUnreg PluginConfig { configUnreg = UnregConfig { configEnable } } = configEnable
-
-newtype QuitConfig = QuitConfig
-  { configEnable :: Bool
-  } deriving (Show, Generic)
-
-instance FromJSON QuitConfig where
-  parseJSON = genericParseJSON customOptions
-
-enableQuit :: PluginConfig -> Bool
-enableQuit PluginConfig { configQuit = QuitConfig { configEnable } } = configEnable
-
 data PluginConfig = PluginConfig
-  { configPr       :: PrConfig
-  , configCommands :: CommandsConfig
-  , configNixrepl  :: NixreplConfig
-  , configLeaked   :: LeakedConfig
-  , configKarma    :: KarmaConfig
-  , configUnreg    :: UnregConfig
-  , configQuit     :: QuitConfig
+  { configCommands :: CommandsConfig
   } deriving (Show, Generic)
 
 instance FromJSON PluginConfig where
@@ -166,10 +71,10 @@ instance FromJSON PluginConfig where
 data Config = Config
   { configUser            :: Text
   , configPassword        :: Text
-  , configStateDir        :: FilePath
   , configDebugMode       :: Bool
   , configChannelDefaults :: PluginConfig
   , configUsers           :: PluginConfig
+  , configStateDir        :: FilePath
   , configChannels        :: Map Text PluginConfig
   } deriving (Show, Generic)
 

@@ -1,0 +1,52 @@
+name:                hnixbot
+version:             0.1.0.0
+synopsis:            IRC bot for NixOS channels
+description:         Based on https://github.com/Infinisil/nixbot
+homepage:            https://github.com/sorki/hnixbot#readme
+license:             BSD3
+license-file:        LICENSE
+author:              Richard Marko
+maintainer:          srk@48.io
+copyright:           2020 Richard Marko
+category:            Web
+build-type:          Simple
+cabal-version:       >=1.10
+extra-source-files:  README.md
+
+executable hnixbot
+  hs-source-dirs:      src
+  main-is:             Main.hs
+  default-language:    Haskell2010
+  ghc-options:         -Wall
+  other-modules:       Config
+                       Utils
+                       Plugins
+                       Log
+                       Frontend.Types
+                       Frontend.AMQP
+                       Plugins.Commands
+                       Plugins.Commands.Cache
+                       Plugins.Commands.NARUrl
+                       Types
+                       IRC
+                       Paths_hnixbot
+  build-depends:       base >= 4.7 && < 5
+                     , aeson
+                     , amqp
+                     , text
+                     , stm
+                     , stm-chans
+                     , async
+                     , containers
+                     , bytestring
+                     , mtl
+                     , directory
+                     , filepath
+                     , unordered-containers
+                     , attoparsec
+                     , time
+                     , optparse-applicative
+                     , unix
+                     , nix-narinfo
+                     , hnix-store-core
+                     , hnix-store-experiments

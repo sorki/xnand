@@ -1,13 +1,6 @@
-{-# LANGUAGE FlexibleContexts      #-}
-{-# LANGUAGE FlexibleInstances     #-}
-{-# LANGUAGE LambdaCase            #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE NamedFieldPuns        #-}
-{-# LANGUAGE OverloadedStrings     #-}
-{-# LANGUAGE RankNTypes            #-}
-{-# LANGUAGE UndecidableInstances  #-}
-{-# LANGUAGE ViewPatterns          #-}
-
+{-# LANGUAGE FlexibleContexts  #-}
+{-# LANGUAGE NamedFieldPuns    #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Main where
 
@@ -16,69 +9,28 @@ import           IRC
 import           Log
 import           Plugins
 import           Plugins.Commands
-import           Plugins.Commands.Tell
-import           Plugins.Karma
-import           Plugins.Leaked
-import           Plugins.NixRepl
-import           Plugins.Pr
-import           Plugins.Quit
-import           Plugins.Unreg
+--import           Plugins.Commands.Tell
 import           Types
 
-import           Control.Concurrent.STM
 import           Control.Concurrent.STM.TMQueue
 import           Control.Monad.Reader
-import           Data.Aeson
-import qualified Data.Set                       as Set
 import           Frontend.AMQP
 import           Frontend.Types
-import           System.Directory
-import           System.FilePath
-
-withSharedState :: Config -> (TVar SharedState -> IO a) -> IO a
-withSharedState cfg action = do
-  let path = configStateDir cfg </> "new/shared"
-  exists <- doesFileExist path
-  value <- if exists then eitherDecodeFileStrict path >>= \case
-    Left err -> fail $ "Error decoding shared state file (" ++ path ++ "): " ++ err
-    Right value -> return value
-  else return $ SharedState Set.empty
-  var <- newTVarIO value
-
-  result <- action var
-
-  finalValue <- readTVarIO var
-  encodeFile path finalValue
-  putStrLn "Saved shared state"
-  return result
-
-
 
 main :: IO ()
 main = do
   config' <- getConfig
   logQueue' <- newTMQueueIO
-  withSharedState config' $ \sharedState' -> do
-    frontend' <- initFrontend
-    let env = Env config' logQueue' sharedState' frontend'
-    flip runReaderT env $ withLogging $
-      runFrontend onInput
+  frontend' <- initFrontend
+  let env = Env config' logQueue' frontend'
+  flip runReaderT env $ withLogging $
+    runFrontend onInput
 
 onInput :: Input -> App ()
 onInput input = do
-  traceUser input
   ps <- plugins (inputSender input)
   _ <- runPlugins ps input
   return ()
-
-traceUser :: Input -> App ()
-traceUser (inputUser -> user) = do
-  var <- asks sharedState
-  new <- liftIO $ atomically $ do
-    s <- readTVar var
-    writeTVar var $ s { knownUsers = Set.insert user (knownUsers s) }
-    return $ not $ Set.member user $ knownUsers s
-  when new $ logMsg $ "Recorded new user: " <> user
 
 examplePlugin :: Plugin
 examplePlugin = Plugin
@@ -86,7 +38,7 @@ examplePlugin = Plugin
   , pluginCatcher = Catched True
   , pluginHandler = \Input { inputSender } ->
       case inputSender of
-        Left "infinisil" -> privMsg "infinisil" "I have received your message"
+        Left "srk" -> privMsg "srk" "I have received your message"
         Right ("bottest", user) -> chanMsg "bottest" $ user <> ": I have received your message"
         _ -> return ()
   }
@@ -97,6 +49,7 @@ developFilter = Plugin
   , pluginCatcher = \Input { inputSender } -> case inputSender of
       Left "infinisil"     -> PassedOn
       Left "gchristensen"  -> PassedOn
+      Left "srk"           -> PassedOn
       Right ("bottest", _) -> PassedOn
       _                    -> Catched True ()
   , pluginHandler = const (return ())
@@ -110,14 +63,7 @@ plugins sender = do
 
   let selectedPlugins =
         [ developFilter | debug ] ++
-        [ unregPlugin | enableUnreg pluginConfig ] ++
-        [ tellSnooper | enableCommands pluginConfig ] ++
-        [ leakedPlugin | enableLeaked pluginConfig ] ++
-        [ commandsPlugin' | enableCommands pluginConfig ] ++
-        [ nixreplPlugin | enableNixrepl pluginConfig ] ++
-        [ karmaPlugin | enableKarma pluginConfig ] ++
-        [ quitPlugin | enableQuit pluginConfig ] ++
-        [ prPlugin (configPr pluginConfig) | enablePr pluginConfig ]
+        [ commandsPlugin' | enableCommands pluginConfig ]
 
   --liftIO $ putStrLn $ "For sender " ++ show sender ++ " using plugins " ++ show (map pluginName selectedPlugins)
   return selectedPlugins
