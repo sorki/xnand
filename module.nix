@@ -10,6 +10,7 @@ let
   configFile = pkgs.writeText "hnixbot-config.json" (builtins.toJSON filteredConfig);
 
   hnixbot = import ./default.nix;
+  dataDir = "/var/lib/hnixbot";
 in
 
 {
@@ -36,11 +37,15 @@ in
 
     users.users.hnixbot = {
       description = "User for hnixbot";
-      home = "/var/lib/hnixbot";
+      home = dataDir;
       createHome = true;
       group = "hnixbot";
     };
     users.groups.hnixbot = {};
+
+    systemd.tmpfiles.rules = [
+      "d ${dataDir} 0770 hnixbot hnixbot -"
+    ];
 
     systemd.services.hnixbot = {
       description = "Nix bot";
@@ -57,7 +62,7 @@ in
         RestartSec = 1;
         MemoryMax = "100M";
         CPUQuota = "50%";
-        WorkingDirectory = "/var/lib/hnixbot/state/nixpkgs";
+        WorkingDirectory = dataDir;
       };
     };
 
