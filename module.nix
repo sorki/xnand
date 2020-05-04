@@ -9,7 +9,6 @@ let
   filteredConfig = filterAttrsRecursive (name: value: name != "_module") cfg.config;
   configFile = pkgs.writeText "hnixbot-config.json" (builtins.toJSON filteredConfig);
 
-  hnixbot = import ./default.nix;
   dataDir = "/var/lib/hnixbot";
 in
 
@@ -17,6 +16,11 @@ in
   options.services.hnixbot = {
 
     enable = mkEnableOption "Nixbot";
+
+    package = mkOption {
+      type = types.package;
+      default = pkgs.haskellPackages.hnixbot;
+    };
 
     config = mkOption {
       type = types.submodule (import ./nix/options.nix);
@@ -57,7 +61,7 @@ in
       serviceConfig = {
         User = "hnixbot";
         Group = "hnixbot";
-        ExecStart = "${hnixbot}/bin/hnixbot ${cfg.configFile}";
+        ExecStart = "${cfg.package}/bin/hnixbot ${cfg.configFile}";
         Restart = "always";
         RestartSec = 1;
         MemoryMax = "100M";
