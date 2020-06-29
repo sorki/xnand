@@ -22,8 +22,8 @@ data Command = Cached Cache
 
 parseCommand :: Parser Command
 parseCommand =
-      ("cache" <|> "cached") *> (Cached <$> cacheParser)
-  <|> ("nar"   <|> "narurl") *> (NARUrl <$> narUrlParser)
+      ("cached" <|> "cache") *> skipSpace *> (Cached <$> cacheParser)
+  <|> ("narurl" <|> "nar")   *> skipSpace *> (NARUrl <$> narUrlParser)
   <|> (pure Listing)
 
 handleCommand :: Command -> PluginT App ()

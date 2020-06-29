@@ -47,10 +47,11 @@ developFilter :: Plugin
 developFilter = Plugin
   { pluginName = "develop-filter"
   , pluginCatcher = \Input { inputSender } -> case inputSender of
-      Left "infinisil"     -> PassedOn
-      Left "gchristensen"  -> PassedOn
-      Left "srk"           -> PassedOn
+      Left "srk" -> PassedOn
+
       Right ("bottest", _) -> PassedOn
+      Right ("emci-spam", _) -> PassedOn
+
       _                    -> Catched True ()
   , pluginHandler = const (return ())
   }
@@ -58,6 +59,7 @@ developFilter = Plugin
 plugins :: (MonadIO m, MonadReader Env m) => Either User (Channel, User) -> m [Plugin]
 plugins sender = do
   pluginConfig <- asks (pluginConfigForSender sender . config)
+  liftIO $ print pluginConfig
 
   debug <- asks (configDebugMode . config)
 
@@ -65,7 +67,5 @@ plugins sender = do
         [ developFilter | debug ] ++
         [ commandsPlugin' | enableCommands pluginConfig ]
 
-  --liftIO $ putStrLn $ "For sender " ++ show sender ++ " using plugins " ++ show (map pluginName selectedPlugins)
+  liftIO $ putStrLn $ "For sender " ++ show sender ++ " using plugins " ++ show (map pluginName selectedPlugins)
   return selectedPlugins
-
-

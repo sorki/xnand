@@ -1,14 +1,15 @@
 {-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE NamedFieldPuns    #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards   #-}
 module Frontend.Types
-  ( shapeInput
-  , Input(..)
+  ( Input(..)
   , inputUser
   , inputChannel
   , Output(..)
-  , shapeOutput
   , Frontend(..)
+  , inputIRC
+  , outputIRC
   ) where
 
 import           Control.Concurrent.STM
@@ -18,35 +19,17 @@ import           Data.List                      (stripPrefix)
 import           Data.Maybe                     (fromJust)
 import           Data.Text                      (Text)
 import qualified Data.Text                      as Text
+import           Data.Time.Clock                (UTCTime)
 import           GHC.Generics                   (Generic)
 import           IRC
 import qualified Network.AMQP                   as A
+
+import Network.IRC.Bridge.Types
 
 data Frontend = Frontend
   { outputQueue :: TMQueue Output
   , amqpChannel :: TMVar A.Channel
   }
-
--- Fields in https://github.com/grahamc/ircbot/blob/master/ircbot/src/bin/gateway.rs
-
-data RawInput = RawInput
-  { in_from   :: Text
-  , in_body   :: Text
-  , in_sender :: Text
-  } deriving (Show, Generic)
-
-data RawOutput = RawOutput
-  { out_target       :: Text
-  , out_body         :: Text
-  , out_message_type :: Text
-  } deriving (Show, Generic)
-
-instance FromJSON RawInput where
-  parseJSON = genericParseJSON defaultOptions
-    { fieldLabelModifier = fromJust . stripPrefix "in_" }
-instance ToJSON RawOutput where
-  toEncoding = genericToEncoding defaultOptions
-    { fieldLabelModifier = fromJust . stripPrefix "out_" }
 
 data Input = Input
   { inputSender  :: Either User (Channel, User)
@@ -66,22 +49,23 @@ data Output = Output
   , outputMessage  :: Message
   } deriving Show
 
+-- compat layer
 
-shapeInput :: RawInput -> Input
-shapeInput RawInput { in_from, in_body, in_sender } = Input
-  { inputMessage = in_body
-  , inputSender = case Text.uncons in_from of
-      Just ('#', chan) -> Right (chan, in_sender)
-      _                -> Left in_sender
+outputIRC :: Output
+          -> UTCTime
+          -> IRCOutput
+outputIRC Output{..} t = IRCOutput {
+    outputTo = either IRCUser IRCChannel outputReceiver
+  , outputBody = outputMessage
+  , outputIsNotice = False
+  , outputTime = t
   }
 
-
-shapeOutput :: Output -> RawOutput
-shapeOutput Output { outputReceiver, outputMessage } = RawOutput
-  { out_body = outputMessage
-  , out_target = case outputReceiver of
-      Left user     -> user
-      Right channel -> '#' `Text.cons` channel
-  , out_message_type = "privmsg"
+inputIRC :: IRCInput -> Input
+inputIRC IRCInput{..} = Input {
+    inputSender = cvt inputFrom inputSender
+  , inputMessage = inputBody
   }
-
+  where
+    cvt (IRCUser user) _ = Left user
+    cvt (IRCChannel channel) (Just user) = Right (channel, user)

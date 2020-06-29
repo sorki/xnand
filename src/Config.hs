@@ -89,9 +89,9 @@ pluginConfigForSender (Right (chan, _)) = pluginConfigForChannel chan
 
 amqpOptions :: Config -> ConnectionOpts
 amqpOptions Config { configUser, configPassword } = defaultConnectionOpts
-  { coVHost = "ircbot"
-  , coTLSSettings = Just TLSTrusted
-  , coServers = [("events.nix.gsc.io", 5671)]
+  { coVHost = "/"
+--  , coTLSSettings = Just TLSTrusted
+  , coServers = [("localhost", 5672)]
   , coAuth = [ amqplain configUser configPassword ]
   }
 

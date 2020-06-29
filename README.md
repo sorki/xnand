@@ -1,20 +1,19 @@
 # hnixbot
 
-hnixbot is an IRC bot supporting Nix-related functionality.
-It's using a RabbitMQ broker maintained by @grahamc for
-sending messages via the `{^_^}` nick on freenode
-(and therefore can't run on its own currently).
+my toy IRC bot.
 
 hnixbot is based on [nixbot](https://github.com/Infinisil/nixbot)
 by @Infinisil.
+
+Uses [ircbridge](https://github.com/sorki/ircbridge)
 
 ## Current functionality
 
 ### Cache queries
 
 ```
-<sorki> #cached /nix/store/x5m45fcnky99r0k41kmdwmjb7zw5k4z4-binutils-2.31.1
-<{^_^}> Cached, size is 4.90 MB
+<sorki> #cached /nix/store/xdii8qvch5h8chyp0z2is2qzky565w68-binutils-2.35.1
+<{^_^}> Cached, size is 4.63 MB decompressed from xz has 30.75 MB references 4 paths
 ```
 
 ```

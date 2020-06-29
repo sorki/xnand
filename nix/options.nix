@@ -36,6 +36,18 @@ in
       description = "Name";
     };
 
+    host = mkOption {
+      type = types.str;
+      description = "AMQP Host";
+      default = "localhost";
+    };
+
+    port = mkOption {
+      type = types.port;
+      description = "AMQP Port";
+      default = 5672;
+    };
+
     stateDir = mkOption {
       type = types.path;
       description = "State dir";

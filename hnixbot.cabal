@@ -1,6 +1,6 @@
 name:                hnixbot
 version:             0.1.0.0
-synopsis:            IRC bot for NixOS channels
+synopsis:            toy IRC bot
 description:         Based on https://github.com/Infinisil/nixbot
 homepage:            https://github.com/sorki/hnixbot#readme
 license:             BSD3
@@ -33,6 +33,8 @@ executable hnixbot
   build-depends:       base >= 4.7 && < 5
                      , aeson
                      , amqp
+                     , ircbridge-amqp
+                     , ircbridge-types
                      , text
                      , stm
                      , stm-chans

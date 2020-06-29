@@ -20,12 +20,15 @@ import qualified Data.ByteString.Lazy.Char8     as BS
 import qualified Data.Text                      as Text
 import           Data.Text.Lazy                 (toStrict)
 import           Data.Text.Lazy.Encoding        (decodeUtf8)
+import qualified Data.Time.Clock
 import           Frontend.Types
 import           Log
 import qualified Network.AMQP                   as A
 import           System.Posix.Signals
 import           System.Timeout
 import           Types
+
+import Network.IRC.Bridge.AMQP.Serialize
 
 -- | Creates a new frontend with an output queue and a yet-non-existant amqp channel
 initFrontend :: IO Frontend
@@ -86,16 +89,12 @@ setup env@Env { config, frontend } = do
 
 queueOpts :: A.QueueOpts
 queueOpts = A.newQueue
-  { A.queueName = ""
-  , A.queueAutoDelete = False
-  , A.queueExclusive = True
-  , A.queueDurable = True
-  }
+  { A.queueName = "" }
 
 exchangeOpts :: A.ExchangeOpts
 exchangeOpts = A.newExchange
-  { A.exchangeName = "exchange-messages"
-  , A.exchangeType = "fanout"
+  { A.exchangeName = "ircExchange"
+  , A.exchangeType = "direct"
   , A.exchangePassive = True
   , A.exchangeDurable = True
   , A.exchangeAutoDelete = False
@@ -108,7 +107,7 @@ run env onInput (_, chan, waiter) = do
   -- Set up for consuming messages
   (queue, _, _) <- A.declareQueue chan queueOpts
   liftIO $ A.declareExchange chan exchangeOpts
-  A.bindQueue chan queue (A.exchangeName exchangeOpts) "queue-publish"
+  A.bindQueue chan queue (A.exchangeName exchangeOpts) "irc.amqp"
 
   _ <- A.consumeMsgs chan queue A.Ack onMsg
   logMsgEnv env "AMQP consumer started"
@@ -119,11 +118,11 @@ run env onInput (_, chan, waiter) = do
   where
     onMsg :: (A.Message, A.Envelope) -> IO ()
     onMsg (msg, envelope) = void $ forkIO $ flip runReaderT env $
-      case decodeInput (A.msgBody msg) of
-        Left err -> logMsg $ "Failed to decode " <> toStrict (decodeUtf8 (A.msgBody msg)) <> ": " <> Text.pack err
-        Right input -> do
-          -- logMsg $ "Received input: " <> show' input
-          onInput input
+      case amqpDecodeIRCInput msg of
+        Nothing -> logMsg $ "Failed to decode " <> (Text.pack $ show msg)
+        Just input -> do
+          logMsg $ "Received input: " <> show' input
+          onInput $ inputIRC input
           lift $ A.ackEnv envelope
 
 -- | Waits for messages on outputQueue and sends them to currently open amqpChannel
@@ -141,17 +140,12 @@ sender env@Env { frontend } = do
     Just (chan, msg) -> do
       -- logMsgEnv env $ "Sending message " <> show' msg
       -- TODO: Make sure the message arrives, put it back into the output queue if it didn't
-      _ <- A.publishMsg chan "" "queue-publish" A.newMsg
-        { A.msgBody = encodeOutput msg
-        , A.msgDeliveryMode = Just A.Persistent
-        }
+      print $ ("Publishing output", msg)
+      now <- Data.Time.Clock.getCurrentTime
+      _ <- A.publishMsg chan "ircExchange" "amqp.irc"
+              $ amqpEncodeIRCOutput $ outputIRC msg now
+
       sender env
-
-decodeInput :: BS.ByteString -> Either String Input
-decodeInput bytes = shapeInput <$> eitherDecode' bytes
-
-encodeOutput :: Output -> BS.ByteString
-encodeOutput = encode . shapeOutput
 
 tearDown :: Env -> (A.Connection, A.Channel, TMVar SomeException) -> IO ()
 tearDown env (conn, _, _) = do
