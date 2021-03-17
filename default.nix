@@ -1,3 +1,5 @@
-(import <nixpkgs> {
-#  overlays = import /home/srk/git/hnix-overlay/overlay.nix;
-}).haskellPackages.callCabal2nix "hnixbot" ./. {}
+{ pkgs ? import <nixpkgs> {} }:
+let
+  src = pkgs.nix-gitignore.gitignoreSource [ ] ./.;
+in
+  pkgs.haskellPackages.callCabal2nix "hnixbot" src {}
