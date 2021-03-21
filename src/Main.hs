@@ -65,7 +65,7 @@ plugins sender = do
 
   let selectedPlugins =
         [ developFilter | debug ] ++
-        [ commandsPlugin' | enableCommands pluginConfig ]
+        [ commandsPlugin | enableCommands pluginConfig ]
 
   liftIO $ putStrLn $ "For sender " ++ show sender ++ " using plugins " ++ show (map pluginName selectedPlugins)
   return selectedPlugins

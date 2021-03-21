@@ -26,6 +26,7 @@ executable hnixbot
                        Frontend.AMQP
                        Plugins.Commands
                        Plugins.Commands.Cache
+                       Plugins.Commands.Decide
                        Plugins.Commands.NARUrl
                        Types
                        IRC
@@ -52,3 +53,4 @@ executable hnixbot
                      , nix-narinfo
                      , hnix-store-core
                      , hnix-store-experiments
+                     , random
