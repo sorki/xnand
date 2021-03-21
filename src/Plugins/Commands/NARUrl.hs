@@ -30,7 +30,7 @@ narUrlParser =
   <|> NARUrlCommand <$> takeText
 
 narUrlHandle :: NARUrl -> PluginT App ()
-narUrlHandle NARUrlHelp = reply "Use `#narUrl(d) /nix/store/<path>` to query URL of the respective NAR"
+narUrlHandle NARUrlHelp = reply "Use `#narUrl /nix/store/<path>` to query URL of the respective NAR"
 narUrlHandle (NARUrlCommand txtPath) = do
   let bPath = BSC.pack $ T.unpack txtPath
 
