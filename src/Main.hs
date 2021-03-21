@@ -9,7 +9,7 @@ import           IRC
 import           Log
 import           Plugins
 import           Plugins.Commands
---import           Plugins.Commands.Tell
+import           Plugins.Factoids
 import           Types
 
 import           Control.Concurrent.STM.TMQueue
@@ -64,8 +64,9 @@ plugins sender = do
   debug <- asks (configDebugMode . config)
 
   let selectedPlugins =
-        [ developFilter | debug ] ++
-        [ commandsPlugin | enableCommands pluginConfig ]
+        [ developFilter | debug ]
+        ++ [ commandsPlugin | enableCommands pluginConfig ]
+        ++ [ factoidsPlugin ] -- filter where? won't work on queries anyway
 
   liftIO $ putStrLn $ "For sender " ++ show sender ++ " using plugins " ++ show (map pluginName selectedPlugins)
   return selectedPlugins

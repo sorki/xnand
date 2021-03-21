@@ -28,6 +28,7 @@ executable hnixbot
                        Plugins.Commands.Cache
                        Plugins.Commands.Decide
                        Plugins.Commands.NARUrl
+                       Plugins.Factoids
                        Types
                        IRC
                        Paths_hnixbot
@@ -54,3 +55,4 @@ executable hnixbot
                      , hnix-store-core
                      , hnix-store-experiments
                      , random
+                     , factoids
