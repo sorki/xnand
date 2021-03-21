@@ -29,7 +29,7 @@ data Cache = CacheHelp
 
 cacheParser :: Parser Cache
 cacheParser =
-      satisfy isEndOfLine *> pure CacheHelp
+      many space *> endOfInput *> pure CacheHelp
   <|> CacheCommand <$> takeText
 
 cacheHandle :: Cache -> PluginT App ()

@@ -26,7 +26,7 @@ data NARUrl = NARUrlHelp
 
 narUrlParser :: Parser NARUrl
 narUrlParser =
-      satisfy isEndOfLine *> pure NARUrlHelp
+      many space *> endOfInput *> pure NARUrlHelp
   <|> NARUrlCommand <$> takeText
 
 narUrlHandle :: NARUrl -> PluginT App ()

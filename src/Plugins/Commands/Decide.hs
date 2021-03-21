@@ -23,11 +23,12 @@ data Decide = DecideHelp
 
 decideParser :: Parser Decide
 decideParser =
-      satisfy isEndOfLine *> pure DecideHelp
-  <|> DecideCommand <$> (skipSpace *> (takeWhile1 (/='|') `sepBy` (skipSpace *> "|" <* skipSpace)))
+      DecideCommand <$> (skipSpace *> (takeWhile1 (/='|') `sepBy1` (skipSpace *> "|" <* skipSpace)))
+  <|> pure DecideHelp
 
 decideHandle :: Decide -> PluginT App ()
 decideHandle DecideHelp = reply "`#decide a | b | c` to use the best AI out there to decide for you"
+decideHandle (DecideCommand []) = reply "yay"
 decideHandle (DecideCommand xs) = do
   roll <- liftIO $ System.Random.randomRIO (0, length xs - 1)
   reply $ xs !! roll
