@@ -15,11 +15,7 @@ import           Control.Concurrent.STM
 import           Control.Concurrent.STM.TMQueue
 import           Control.Exception
 import           Control.Monad.Reader
-import           Data.Aeson
-import qualified Data.ByteString.Lazy.Char8     as BS
 import qualified Data.Text                      as Text
-import           Data.Text.Lazy                 (toStrict)
-import           Data.Text.Lazy.Encoding        (decodeUtf8)
 import qualified Data.Time.Clock
 import           Frontend.Types
 import           Log
@@ -138,9 +134,8 @@ sender env@Env { frontend } = do
   case tosend of
     Nothing -> logMsgEnv env "Finished sending, sender queue empty and closed"
     Just (chan, msg) -> do
-      -- logMsgEnv env $ "Sending message " <> show' msg
+      logMsgEnv env $ "Sending message " <> show' msg
       -- TODO: Make sure the message arrives, put it back into the output queue if it didn't
-      print $ ("Publishing output", msg)
       now <- Data.Time.Clock.getCurrentTime
       _ <- A.publishMsg chan "ircExchange" "amqp.irc"
               $ amqpEncodeIRCOutput $ outputIRC msg now

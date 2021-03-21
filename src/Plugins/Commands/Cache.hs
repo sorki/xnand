@@ -9,7 +9,6 @@ module Plugins.Commands.Cache (
 
 import           Control.Applicative
 import           Control.Monad.Trans
-import           Control.Monad.IO.Class
 import           Data.Text              (Text)
 import qualified Data.Text              as T
 import qualified Data.ByteString.Char8  as BSC

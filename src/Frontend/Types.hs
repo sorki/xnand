@@ -14,13 +14,7 @@ module Frontend.Types
 
 import           Control.Concurrent.STM
 import           Control.Concurrent.STM.TMQueue
-import           Data.Aeson
-import           Data.List                      (stripPrefix)
-import           Data.Maybe                     (fromJust)
-import           Data.Text                      (Text)
-import qualified Data.Text                      as Text
 import           Data.Time.Clock                (UTCTime)
-import           GHC.Generics                   (Generic)
 import           IRC
 import qualified Network.AMQP                   as A
 
@@ -69,3 +63,4 @@ inputIRC IRCInput{..} = Input {
   where
     cvt (IRCUser user) _ = Left user
     cvt (IRCChannel channel) (Just user) = Right (channel, user)
+    cvt (IRCChannel _) Nothing = error "Impossible .. channel message from no user"
