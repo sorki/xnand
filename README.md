@@ -9,7 +9,21 @@ Uses [ircbridge](https://github.com/sorki/ircbridge)
 
 ## Current functionality
 
-### Cache queries
+### Decisions..
+
+```
+#decide a | b | c
+```
+
+### Factoids
+
+```
+Set - ?somefact = something
+Get - ?somefact or somefact?
+Forget - ?somefact-forget
+```
+
+### Nix Cache queries
 
 ```
 <sorki> #cached /nix/store/xdii8qvch5h8chyp0z2is2qzky565w68-binutils-2.35.1
