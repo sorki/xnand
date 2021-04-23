@@ -33,8 +33,8 @@ parser = argument str
 opts :: ParserInfo FilePath
 opts = info (parser <**> helper)
    ( fullDesc
-  <> progDesc "Hnixbot"
-  <> header "hnixbot - hnix bot"
+  <> progDesc "xnand"
+  <> header "a bot"
    )
 
 lowerFirst :: String -> String

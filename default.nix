@@ -2,4 +2,4 @@
 let
   src = pkgs.nix-gitignore.gitignoreSource [ ] ./.;
 in
-  pkgs.haskellPackages.callCabal2nix "hnixbot" src {}
+  pkgs.haskellPackages.callCabal2nix "xnand" src {}

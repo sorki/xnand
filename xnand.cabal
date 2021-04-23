@@ -1,8 +1,8 @@
-name:                hnixbot
+name:                xnand
 version:             0.1.0.0
 synopsis:            toy IRC bot
 description:         Based on https://github.com/Infinisil/nixbot
-homepage:            https://github.com/sorki/hnixbot#readme
+homepage:            https://github.com/sorki/xnand#readme
 license:             BSD3
 license-file:        LICENSE
 author:              Richard Marko
@@ -13,7 +13,7 @@ build-type:          Simple
 cabal-version:       >=1.10
 extra-source-files:  README.md
 
-executable hnixbot
+executable xnand
   hs-source-dirs:      src
   main-is:             Main.hs
   default-language:    Haskell2010
@@ -31,7 +31,7 @@ executable hnixbot
                        Plugins.Factoids
                        Types
                        IRC
-                       Paths_hnixbot
+                       Paths_xnand
   build-depends:       base >= 4.7 && < 5
                      , aeson
                      , amqp

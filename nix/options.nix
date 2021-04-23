@@ -51,7 +51,7 @@ in
     stateDir = mkOption {
       type = types.path;
       description = "State dir";
-      default = "/var/lib/hnixbot/state";
+      default = "/var/lib/xnand/state";
     };
 
     channels = mkOption {

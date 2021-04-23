@@ -4,28 +4,28 @@ with lib;
 
 let
 
-  cfg = config.services.hnixbot;
+  cfg = config.services.xnand;
 
   filteredConfig = filterAttrsRecursive (name: value: name != "_module") cfg.config;
-  configFile = pkgs.writeText "hnixbot-config.json" (builtins.toJSON filteredConfig);
+  configFile = pkgs.writeText "xnand-config.json" (builtins.toJSON filteredConfig);
 
-  dataDir = "/var/lib/hnixbot";
+  dataDir = "/var/lib/xnand";
 in
 
 {
-  options.services.hnixbot = {
+  options.services.xnand = {
 
-    enable = mkEnableOption "Nixbot";
+    enable = mkEnableOption "xnand";
 
     package = mkOption {
       type = types.package;
-      default = pkgs.haskellPackages.hnixbot;
+      default = pkgs.haskellPackages.xnand;
     };
 
     config = mkOption {
       type = types.submodule (import ./nix/options.nix);
       default = {};
-      description = "Nixbot configuration";
+      description = "xnand configuration";
     };
 
     configFile = mkOption {
@@ -37,32 +37,32 @@ in
 
   config = mkIf cfg.enable {
 
-    services.hnixbot.configFile = mkDefault configFile;
+    services.xnand.configFile = mkDefault configFile;
 
-    users.users.hnixbot = {
-      description = "User for hnixbot";
+    users.users.xnand = {
+      description = "User for xnand";
       home = dataDir;
       createHome = true;
-      group = "hnixbot";
+      group = "xnand";
       isSystemUser = true;
     };
-    users.groups.hnixbot = {};
+    users.groups.xnand = {};
 
     systemd.tmpfiles.rules = [
-      "d ${dataDir} 0770 hnixbot hnixbot -"
+      "d ${dataDir} 0770 xnand xnand -"
     ];
 
-    systemd.services.hnixbot = {
-      description = "Nix bot";
+    systemd.services.xnand = {
+      description = "a bot";
       wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
       wants = [ ];
       path = [ ];
       unitConfig.StartLimitIntervalSec = 0;
       serviceConfig = {
-        User = "hnixbot";
-        Group = "hnixbot";
-        ExecStart = "${cfg.package}/bin/hnixbot ${cfg.configFile}";
+        User = "xnand";
+        Group = "xnand";
+        ExecStart = "${cfg.package}/bin/xnand ${cfg.configFile}";
         Restart = "always";
         RestartSec = 1;
         MemoryMax = "100M";
@@ -71,7 +71,7 @@ in
       };
     };
 
-    users.users.nginx.extraGroups = [ "hnixbot" ];
+    users.users.nginx.extraGroups = [ "xnand" ];
 
   };
 }

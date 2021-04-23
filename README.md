@@ -1,8 +1,8 @@
-# hnixbot
+# xnand
 
 my toy IRC bot.
 
-hnixbot is based on [nixbot](https://github.com/Infinisil/nixbot)
+xnand is based on [nixbot](https://github.com/Infinisil/nixbot)
 by @Infinisil.
 
 Uses [ircbridge](https://github.com/sorki/ircbridge)
