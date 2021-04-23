@@ -44,6 +44,7 @@ in
       home = dataDir;
       createHome = true;
       group = "hnixbot";
+      isSystemUser = true;
     };
     users.groups.hnixbot = {};
 
