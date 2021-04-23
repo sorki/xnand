@@ -38,6 +38,9 @@ parseFact =
   <|> (Get <$> tok)
   <|> (pure Help)
 
+parseNakedQuestion :: Parser Command
+parseNakedQuestion = (Get <$> tok <* "?" <* endOfInput)
+
 getDb :: Channel -> PluginT App Text
 getDb c = do
   cs <- getChannelState c
@@ -71,9 +74,13 @@ handleCommand _ Help = reply $ "?<factoid> to query, ?<factoid>=value to set, ?<
 factoidsPlugin :: Plugin
 factoidsPlugin = Plugin
   { pluginName = "factoids"
-  , pluginCatcher = \Input { inputMessage } -> case Data.Text.uncons inputMessage of
-      Just ('?', command) -> Catched True $ parseOnly parseFact command
-      _           -> PassedOn
+  , pluginCatcher = \Input { inputMessage } ->
+      case Data.Text.uncons inputMessage of
+        Just ('?', command) -> Catched True $ parseOnly parseFact command
+        _                   ->
+          case parseOnly parseNakedQuestion inputMessage of
+            Left _ -> PassedOn
+            x -> Catched True x
   , pluginHandler = \case
       Left err -> do
         liftIO $ print err
