@@ -23,7 +23,7 @@ in
     };
 
     config = mkOption {
-      type = types.submodule (import ./nix/options.nix);
+      type = types.submodule (import ./options.nix);
       default = {};
       description = "xnand configuration";
     };
