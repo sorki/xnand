@@ -19,6 +19,19 @@ let
         description = "Whether to enable the command plugin.";
       };
     };
+
+    factoids = {
+      prefixed = mkOption {
+        type = types.bool;
+        default = false;
+        description = "Whether to only respond to question mark prefixed queries";
+      };
+      ops = mkOption {
+        type = types.listOf types.str;
+        default = [];
+        description = "Ops who can undefine factoids";
+      };
+    };
   };
 
 in

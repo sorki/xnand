@@ -8,6 +8,7 @@ module Config (
   , Config(..)
   , PluginConfig(..)
   , CommandsConfig(..)
+  , FactoidsConfig(..)
   , enableCommands
   , pluginConfigForSender
   ) where
@@ -50,7 +51,7 @@ customOptions = defaultOptions
       field
   }
 
-data CommandsConfig = CommandsConfig
+newtype CommandsConfig = CommandsConfig
   { configEnable   :: Bool
   } deriving (Show, Generic)
 
@@ -60,8 +61,17 @@ instance FromJSON CommandsConfig where
 enableCommands :: PluginConfig -> Bool
 enableCommands PluginConfig { configCommands = CommandsConfig { configEnable } } = configEnable
 
+data FactoidsConfig = FactoidsConfig
+  { configPrefixed :: Bool -- ^ respond to ?why instead of why?
+  , configOps      :: [Text]
+  } deriving (Show, Generic)
+
+instance FromJSON FactoidsConfig where
+  parseJSON = genericParseJSON customOptions
+
 data PluginConfig = PluginConfig
   { configCommands :: CommandsConfig
+  , configFactoids :: FactoidsConfig
   } deriving (Show, Generic)
 
 instance FromJSON PluginConfig where
