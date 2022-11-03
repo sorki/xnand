@@ -71,7 +71,5 @@ in
       };
     };
 
-    users.users.nginx.extraGroups = [ "xnand" ];
-
   };
 }
