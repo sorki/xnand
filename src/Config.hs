@@ -98,12 +98,16 @@ pluginConfigForSender (Right (chan, _)) = pluginConfigForChannel chan
           Map.findWithDefault configChannelDefaults channel configChannels
 
 amqpOptions :: Config -> ConnectionOpts
+amqpOptions = pure defaultConnectionOpts
+{--
+amqpOptions :: Config -> ConnectionOpts
 amqpOptions Config { configUser, configPassword } = defaultConnectionOpts
   { coVHost = "/"
 --  , coTLSSettings = Just TLSTrusted
   , coServers = [("localhost", 5672)]
   , coAuth = [ amqplain configUser configPassword ]
   }
+--}
 
 getConfig :: IO Config
 getConfig = do
