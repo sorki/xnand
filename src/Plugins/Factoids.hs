@@ -93,7 +93,6 @@ factoidsPlugin = Plugin
   , pluginHandler = \case
       Left err -> do
         liftIO $ print err
-        reply "Invalid command syntax"
       Right command -> do
         mc <- getChannel
         maybe
