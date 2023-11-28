@@ -22,7 +22,6 @@ import Data.Factoid
 import Data.Factoid.Schema
 
 data Command = Get Text
-             | NakedGet Text
              | Set Text Text
              | Forget Text
              | Help
@@ -36,13 +35,10 @@ tok = takeWhile1 $ inClass $
 
 parseFact :: Parser Command
 parseFact =
-      (Set <$> (tok <* skipSpace <* "=") <*> (skipSpace *> takeText))
+      (pure Help <$> "help")
+  <|> (Set <$> (tok <* skipSpace <* "=") <*> (skipSpace *> takeText))
   <|> (Forget <$> (tok <* "-forget"))
   <|> (Get <$> tok)
-  <|> pure Help
-
-parseNakedQuestion :: Parser Command
-parseNakedQuestion = NakedGet <$> tok <* "?" <* endOfInput
 
 getDb :: Channel -> PluginT App Text
 getDb c = do
@@ -67,9 +63,6 @@ handleCommand c (Get k) = do
   case mfact of
     Just fact -> reply $ k <> " is " <> factoidValue fact
     Nothing -> reply $ "I don't know about " <> k
-handleCommand c (NakedGet k) = do
-  prefixed <- configPrefixed <$> getFactoidsConfig
-  unless prefixed $ handleCommand c (Get k)
 handleCommand c (Forget k) = do
   u <- getUser
   ops <- configOps <$> getFactoidsConfig
@@ -96,10 +89,7 @@ factoidsPlugin = Plugin
   , pluginCatcher = \Input { inputMessage } ->
       case Data.Text.uncons inputMessage of
         Just ('?', command) -> Catched True $ parseOnly parseFact command
-        _                   ->
-          case parseOnly parseNakedQuestion inputMessage of
-            Left _ -> PassedOn
-            x -> Catched True x
+        _                   -> PassedOn
   , pluginHandler = \case
       Left err -> do
         liftIO $ print err
